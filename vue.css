@@ -1,0 +1,54 @@
+.thumbnail {
+  object-fit: contain;
+  width:300px;
+}
+
+.photocontainer {
+   margin:0.25em;
+   width:300px;
+   float:left;
+}
+
+.app {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: space-between;
+}
+
+.floatright {
+   float:right;
+}
+
+#mapid {
+	clear:both;
+	height:650px;
+}
+
+.map_popup_image {
+	width:250px;
+}
+
+
+.imagebuttons {
+   position:relative;
+   display:flex;
+   height:0;
+   justify-content: space-between;
+     
+}
+
+.imagebuttons > .deletebutton {
+  height:2em;
+  margin:0.25em;
+
+}
+
+.imagebuttons > .likebutton {
+  height:2em;
+  margin:0.25em;
+
+}
+
+.like {
+  border: 0.5em solid green;
+}

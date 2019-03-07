@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Vue-testi</title>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'unsafe-eval' 'unsafe-inline' blob: data: filesystem: mediastream: wiktionary.org *.wiktionary.org *.wmflabs.org wikimediafoundation.org mediawiki.org *.mediawiki.org *.finna.fi kartta.hel.fi geoserver.hel.fi api.tiles.mapbox.com cdn.digitransit.fi wss://tools.wmflabs.org;">
+
+
+
+<script src="js/jquery.min.js"></script>
+<script src="js/vue.js"></script>
+<script src="js/leaflet.js"></script>
+<script src="js/proj4-compressed.js"></script>
+<script src="js/proj4leaflet.js"></script>
+<script src="js/vue_loader.js"></script>
+<link rel="stylesheet" type="text/css" href="js/leaflet.css">
+<link rel="stylesheet" type="text/css" href="vue.css">
+
+</head>
+<body>
+
+<div id="app">
+    <div>
+    <form v-bind="params" action='vue.html' type='get'>
+       <input type='text' :value='params.searchkey' size=40 name='searchkey'>
+       <input type='submit' value='search' name='submit'>
+       <select v-model='params.coordfilter' name='coordfilter'>
+          <option v-bind:value="1">All photos</option>
+          <option v-bind:value="2">Photos with point coordinates</option>
+       </select>
+          
+       <input type='button' value='random' onclick='document.location="vue.html?uniq=" + Math.random()'>
+       <a :href='params.searchurl'>json</a>
+       <div class='floatright'>Kuvat: Helsingin kaupunginmuseo / <a href='http://creativecommons.org/licenses/by/4.0/deed.fi'>CC-BY-4.0</a></div>
+    </form>
+    </div>
+    <div v-for="(photo, index) in photos" class='photocontainer'>
+      <div class='imagebuttons'   :class="{like: photo.like}">
+         <button @click="likeclick(index)" class='likebutton' :value='photo.finna_id'>Like</button>
+         <button @click="deleteclick(index)" class='deletebutton' :value='photo.finna_id'>Remove</button>
+      </div>
+      <img 
+         class="thumbnail"
+         @mouseover="photo.ishovering = true"  
+         @mouseout="photo.ishovering = false" 
+         :src="'https://www.finna.fi' + photo.small_url" />
+      <h3>{{ photo.title }}</h3>
+      <p>{{ photo.summary }}<p>
+      <ul>
+         <li v-if="photo.placeline"><a v-bind='params' :href="'?searchkey=' + photo.placeline + '&coordfilter=' + params.coordfilter">{{photo.placeline}}</a></li>
+         <li v-if="photo.dateline">{{photo.dateline}}</li>
+         <li v-if="photo.lat">{{photo.lat}}, {{photo.lon}} </li>
+         <li v-if="photo.author_name">{{photo.author_name}}</li>
+         <li><a :href="'https://www.finna.fi/Record/' + photo.finna_id">{{photo.finna_id}}</a></li>
+         <li v-if="photo.imagerights_copyright!='CC BY 4.0'"><a :href="photo.imagerights_link">{{photo.imagerights_copyright}}</a></li>
+      </ul>
+    </div>
+</div>
+<div id="mapid">xxxx</div>
+
+
+
+</body>
+</html>

@@ -2,9 +2,9 @@
 
 $ts_pw = posix_getpwuid(posix_getuid());
 $ts_mycnf = parse_ini_file($ts_pw['dir'] . "/replica.my.cnf");
-$db = mysql_connect('tools.labsdb', $ts_mycnf['user'], $ts_mycnf['password']) or  d_die('Mysql connect failed: ' . mysql_error());
+$db = mysqli_connect('tools.labsdb', $ts_mycnf['user'], $ts_mycnf['password']) or  d_die('Mysql connect failed: ' . mysqli_connect_error($db));
 unset($ts_mycnf);
-mysql_select_db('s51154_hkmphotos', $db) or  d_die('Mysql select db failed: ' . mysql_error());
+mysqli_select_db($db, 's51154_hkmphotos') or  d_die('Mysql select db failed: ' . mysqli_error($db));
 
 
 function d_die($str)
@@ -22,19 +22,19 @@ function tag_photo($finna_id, $tagkey, $state, $userhash)
         $photo_id=0;
 
         $query_tmp="SELECT * FROM tags WHERE title = '%s' LIMIT 1 ";
-        $query=sprintf($query_tmp, mysql_real_escape_string($tagkey));
+        $query=sprintf($query_tmp, mysqli_real_escape_string($db, $tagkey));
 
-        $result = mysql_query($query, $db) or d_die('Query failed: ' . mysql_error() );
-        while ($line = mysql_fetch_array($result, MYSQL_ASSOC))
+        $result = mysqli_query($db, $query) or d_die('Query failed: ' . mysqli_error($db) );
+        while ($line = mysqli_fetch_array($result, MYSQLI_ASSOC))
 	{
 		$tag_id=$line['id'];
 	}
 	if ($tag_id==0) return array('status' => 'ERROR', 'message' => 'unknown tag: ' . $tagkey . " " . $query);
 
         $query_tmp="SELECT * FROM photos WHERE finna_id = '%s' LIMIT 1 ";
-        $query=sprintf($query_tmp, mysql_real_escape_string($finna_id));
-        $result = mysql_query($query, $db) or d_die('Query failed: ' . mysql_error() );
-        while ($line = mysql_fetch_array($result, MYSQL_ASSOC))
+        $query=sprintf($query_tmp, mysqli_real_escape_string($db, $finna_id));
+        $result = mysqli_query($db, $query) or d_die('Query failed: ' . mysqli_error($db) );
+        while ($line = mysqli_fetch_array($result, MYSQLI_ASSOC))
 	{
 		$photo_id=$line['id'];
 	}
@@ -43,9 +43,9 @@ function tag_photo($finna_id, $tagkey, $state, $userhash)
 
         $query_tmp="SELECT * FROM taglinks WHERE tag_id = %d AND photo_id = %d LIMIT 1 ";
         $query=sprintf($query_tmp, $tag_id, $photo_id);
-        $result = mysql_query($query, $db) or d_die('Query failed: ' . mysql_error() );
+        $result = mysqli_query($db, $query) or d_die('Query failed: ' . mysqli_error($db) );
 
-        while ($line = mysql_fetch_array($result, MYSQL_ASSOC))
+        while ($line = mysqli_fetch_array($result, MYSQLI_ASSOC))
 	{
 		$taglink_id=$line['id'];
 	}
@@ -59,13 +59,13 @@ function tag_photo($finna_id, $tagkey, $state, $userhash)
 		$query_tmp="UPDATE taglinks SET deleted=%d WHERE id=%d";
 	        $query=sprintf($query_tmp, $state, $taglink_id);
 	}
-        $result = mysql_query($query, $db) or d_die('Query failed: ' . mysql_error() );
+        $result = mysqli_query($db, $query) or d_die('Query failed: ' . mysqli_error($db) );
 
 	$userhash=substr(md5($_SERVER['HTTP_USER_AGENT']), 0, 8);
 	$query_tmp="INSERT taghistory (photo_id, tag_id, action, user) VALUES (%d, %d, %d, '%s')";
-	$query=sprintf($query_tmp, $tag_id, $photo_id, $state,  mysql_real_escape_string($userhash));
+	$query=sprintf($query_tmp, $tag_id, $photo_id, $state,  mysqli_real_escape_string($db, $userhash));
 
-        $result = mysql_query($query, $db) or d_die('Query failed: ' . mysql_error() );
+        $result = mysqli_query($db, $query) or d_die('Query failed: ' . mysqli_error($db) );
 
 	return array('status' => 'OK');
 }

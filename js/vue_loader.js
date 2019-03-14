@@ -12,7 +12,7 @@ function init_vue() {
    function deleteclick(index)
    {
       var p=this.photos[index];
-      var url="tag_photos.php?tag=delete&finna_id=" + encodeURIComponent(p.finna_id);
+      var url=this.params.hkmtools_api + "tag_photos.php?tag=delete&finna_id=" + encodeURIComponent(p.finna_id);
       if (typeof(p.marker) !== "undefined") p.marker.remove();
       $.getJSON(url, function (json) {});
       this.photos.splice(index,1);
@@ -21,16 +21,14 @@ function init_vue() {
    function likeclick(index)
    {
       var p=this.photos[index];
-      var url="tag_photos.php?tag=like&finna_id=" + encodeURIComponent(p.finna_id);
+      var url=this.params.hkmtools_api + "tag_photos.php?tag=like&finna_id=" + encodeURIComponent(p.finna_id);
       p.like=1;
       $.getJSON(url, function (json) {
       });
    }
 
-   function init_map() {
-
-      var map = L.map('mapid').setView([60.192059,24.945831], 13);
-
+   function init_map(mapelement) {
+      var map = L.map(mapelement);
 
       var normalTiles = L.tileLayer('https://cdn.digitransit.fi/map/v1/{id}/{z}/{x}/{y}.png', {
          attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
@@ -120,7 +118,20 @@ function init_vue() {
       methods: {
          deleteclick: deleteclick,
          likeclick: likeclick,
-      }
+         keylistener: function () {
+            if (event.keyCode === 27) {
+                this.modal.showModal = false;
+            }
+         }
+      },
+      mounted: function() {
+         this.modal.map=init_map(this.$refs.mapelement)
+         addMarkers(this.modal.map, this.photos);
+         window.addEventListener('keyup', this.keylistener);
+      },
+      destroyed: function(){
+         document.removeEventListener('keyup', this.keylistener);
+      },
    })
 
    Vue.component('photos-component', {
@@ -131,10 +142,13 @@ function init_vue() {
          likeclick: likeclick,
          showModal: function(index)
          {
+            this.modal.showModal=true;
             this.modal.index=index;
             this.modal.photo=this.photos[index];
             this.modal.photo.like=0;
-            this.modal.showModal=true;
+//            alert(JSON.stringify(this.$refs));
+//            this.modal.map=init_map();
+
          }
 
       }
@@ -163,6 +177,7 @@ function init_vue() {
          },
          photos:[],
          params:{
+            hkmtools_api:"https://tools.wmflabs.org/fiwiki-tools/hkmtools/",
             searchkey:"",
             searchurl:"",
             coordfilter:"2"
@@ -170,23 +185,25 @@ function init_vue() {
       },
       methods: {
          
+      },
+      created: function() {
       }
    })
    app.params.searchkey=decodeURIComponent(getSearchParams('searchkey', "").replace(/\+/g, '%20'));
    app.params.coordfilter=decodeURIComponent(getSearchParams('coordfilter',2));
 
-   var url="list_photos.php?";
+   var url=app.params.hkmtools_api + "list_photos.php?";
    if (app.params.searchkey != "") {
       url+="&searchkey=" + encodeURIComponent(app.params.searchkey);
    }
    if (app.params.coordfilter != "") {
       url+="&coordfilter=" + encodeURIComponent(app.params.coordfilter);
    }
+//   init_map();
    
    app.params.searchurl=url;
    $.getJSON(url, function (json) {
       app.photos = json;
-      init_map();
    });
 
 }

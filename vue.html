@@ -13,8 +13,8 @@
 <script src="js/proj4-compressed.js"></script>
 <script src="js/proj4leaflet.js"></script>
 <script src="js/vue_loader.js"></script>
-<link rel="stylesheet" type="text/css" href="js/leaflet.css">
-<link rel="stylesheet" type="text/css" href="vue.css">
+<link rel="stylesheet" type="text/css" href="css/leaflet.css">
+<link rel="stylesheet" type="text/css" href="css/vue.css">
 
 
 <script type="text/x-template" id="topbar-template">
@@ -64,7 +64,7 @@
 <script type="text/x-template" id="modal-template">
   <transition name="modal">
     <div class="modal-mask">
-      <div class="modal-wrapper">
+      <div class="modal-wrapper" @click.self="$emit('close')">
         <div class="modal-container">
 
           <div class="modal-header">
@@ -88,16 +88,16 @@
                      :src="'https://www.finna.fi' + modal.photo.large_url" />
                </div>
                <div class='modal_col'>
-               <p>{{ modal.photo.summary }}</p>
-               <ul>
-                  <li v-if="modal.photo.dateline">{{modal.photo.dateline}}</li>
-                  <li v-if="modal.photo.lat">{{modal.photo.lat}}, {{modal.photo.lon}} </li>
-                  <li v-if="modal.photo.author_name">{{modal.photo.author_name}}</li>
-                  <li><a :href="'https://www.finna.fi/Record/' + modal.photo.finna_id">{{modal.photo.finna_id}}</a></li>
-                  <li v-if="modal.photo.imagerights_copyright!='CC BY 4.0'"><a :href="modal.photo.imagerights_link">{{modal.photo.imagerights_copyright}}</a></li>
+                  <p>{{ modal.photo.summary }}</p>
+                  <ul>
+                     <li v-if="modal.photo.dateline">{{modal.photo.dateline}}</li>
+                     <li v-if="modal.photo.lat">{{modal.photo.lat}}, {{modal.photo.lon}} </li>
+                     <li v-if="modal.photo.author_name">{{modal.photo.author_name}}</li>
+                     <li><a :href="'https://www.finna.fi/Record/' + modal.photo.finna_id">{{modal.photo.finna_id}}</a></li>
+                     <li v-if="modal.photo.imagerights_copyright!='CC BY 4.0'"><a :href="modal.photo.imagerights_link">{{modal.photo.imagerights_copyright}}</a></li>
                </ul>
-
-               <div>
+               <div id='mapid' ref='mapelement'></div>
+               </div>
             </slot>
           </div>
 
@@ -122,8 +122,7 @@
 <div id="app">
   <topbar-component v-bind:params='params'></topbar-component>
   <photos-component v-bind:photos='photos' v-bind:params='params' v-bind:modal='modal'></photos-component>
-  <modal v-if="modal.showModal" v-bind:photos='photos' v-bind:modal='modal' @close="modal.showModal = false"> </modal>
-  <div id='mapid'></div>
+  <modal v-if="modal.showModal" v-bind:params='params' v-bind:photos='photos' v-bind:modal='modal' @close="modal.showModal = false"> </modal>
 </div>
 
 </body>

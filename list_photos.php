@@ -27,7 +27,7 @@ function get_tag_id($tagkey) {
 	return $tag_id;
 }
 
-function get_photos_from_db($searchkey, $coordfilter, $finna_id)
+function get_photos_from_db($searchkey, $coordfilter, $finna_id, $limit)
 {
         global $db;
         $ret=array();
@@ -60,7 +60,7 @@ function get_photos_from_db($searchkey, $coordfilter, $finna_id)
 
 //        $query_tmp.=" GROUP BY photos.id ";
 	$query_tmp.="ORDER BY viewcount,random ";
-	$query_tmp.="LIMIT 15 ";
+	$query_tmp.=sprintf("LIMIT %d ", $limit);
 
 	$query=$query_tmp;
         $ids=array();
@@ -69,6 +69,7 @@ function get_photos_from_db($searchkey, $coordfilter, $finna_id)
         {
 		if (isset($line['dateline'])) $line['dateline']=preg_replace("/(\n|\s+)/ism", " ", $line['dateline']);
                 if (isset($line['medium_url'])) $line['small_url']=preg_replace("/medium/ism", "small", $line['medium_url']);
+                if (isset($line['medium_url'])) $line['master_url']=preg_replace("/medium/ism", "master", $line['medium_url']);
                 $line['like']=0;
 
                 array_push($ret, $line);
@@ -90,7 +91,11 @@ $coordfilter=1;
 if (isset($_GET['coordfilter'])) $coordfilter=trim($_GET['coordfilter'])*1;
 if ($coordfilter!=2) $coordfilter=1;
 
-$photos=get_photos_from_db($searchkey, $coordfilter, $finna_id);
+$limit=15;
+if (isset($_GET['limit'])) $limit=trim($_GET['limit'])*1;
+if (!($limit>0 && $limit<101)) $limit=15;
+
+$photos=get_photos_from_db($searchkey, $coordfilter, $finna_id, $limit);
 
 print json_encode($photos, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);
 ?>

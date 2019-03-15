@@ -1,6 +1,9 @@
-
-
 function init_vue() {
+   function randomclick(limit)
+   {
+      document.location="vue.html?limit=" + limit + "?uniq=" + Math.random();
+   }
+
    function getSearchParams(k, d){
       var p={};
       location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(s,k,v){p[k]=v})
@@ -25,6 +28,11 @@ function init_vue() {
       p.like=1;
       $.getJSON(url, function (json) {
       });
+   }
+   function uploadclick(index)
+   {
+      var p=this.photos[index];
+      upload_to_commons(p);
    }
 
    function init_map(mapelement) {
@@ -82,6 +90,18 @@ function init_vue() {
       return map;
    }
 
+   function addMarker(map, photo) {
+      if (photo.lat>0 && photo.lon>0) {
+         map.setView([photo.lat, photo.lon], 16);
+         var marker = L.marker([photo.lat, photo.lon], {title: photo.title}).addTo(map);
+         return marker;
+      }
+      else
+      {
+         map.setView([60.17, 24.93], 13);
+      }
+   }
+
    function addMarkers(map, photos) {
       var markers=[];
       for (var k in photos) {
@@ -109,7 +129,10 @@ function init_vue() {
 
    Vue.component('topbar-component', {
       template: '#topbar-template',
-      props: ['params']
+      props: ['params', 'user'],
+      methods: {
+         'random': randomclick
+      }
    });
 
    Vue.component('modal', {
@@ -118,6 +141,7 @@ function init_vue() {
       methods: {
          deleteclick: deleteclick,
          likeclick: likeclick,
+         uploadclick: uploadclick,
          keylistener: function () {
             if (event.keyCode === 27) {
                 this.modal.showModal = false;
@@ -126,7 +150,8 @@ function init_vue() {
       },
       mounted: function() {
          this.modal.map=init_map(this.$refs.mapelement)
-         addMarkers(this.modal.map, this.photos);
+         var p=this.photos[this.modal.index];
+         this.modal.marker=addMarker(this.modal.map, p);
          window.addEventListener('keyup', this.keylistener);
       },
       destroyed: function(){
@@ -161,6 +186,7 @@ function init_vue() {
          modal: {
             showModal: false,
             index: null,
+            marker: null,
             photo: {
                title:"",
                description:"",
@@ -171,26 +197,32 @@ function init_vue() {
                small_url:"",
                medium_url:"",
                large_url:"",
+               master_url:"",
                like:0
             }
 
+         },
+         user: {
+            username:'unknown'
          },
          photos:[],
          params:{
             hkmtools_api:"https://tools.wmflabs.org/fiwiki-tools/hkmtools/",
             searchkey:"",
             searchurl:"",
-            coordfilter:"2"
-         } 
+            coordfilter:"2",
+            limit:"15",
+         }
       },
       methods: {
-         
+
       },
       created: function() {
       }
    })
    app.params.searchkey=decodeURIComponent(getSearchParams('searchkey', "").replace(/\+/g, '%20'));
-   app.params.coordfilter=decodeURIComponent(getSearchParams('coordfilter',2));
+   app.params.coordfilter=parseInt(decodeURIComponent(getSearchParams('coordfilter',2)));
+   app.params.limit=parseInt(decodeURIComponent(getSearchParams('limit',15)));
 
    var url=app.params.hkmtools_api + "list_photos.php?";
    if (app.params.searchkey != "") {
@@ -199,16 +231,18 @@ function init_vue() {
    if (app.params.coordfilter != "") {
       url+="&coordfilter=" + encodeURIComponent(app.params.coordfilter);
    }
-//   init_map();
-   
+
+   if (app.params.limit != "") {
+      url+="&limit=" + encodeURIComponent(app.params.limit);
+   }
+
    app.params.searchurl=url;
    $.getJSON(url, function (json) {
       app.photos = json;
    });
+   mw_whoami(app.user);
 
 }
-
-
 $(init_vue);
 
 

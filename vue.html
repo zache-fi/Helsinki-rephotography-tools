@@ -12,6 +12,7 @@
 <script src="js/leaflet.js"></script>
 <script src="js/proj4-compressed.js"></script>
 <script src="js/proj4leaflet.js"></script>
+<script src="js/mediawiki.js"></script>
 <script src="js/vue_loader.js"></script>
 <link rel="stylesheet" type="text/css" href="css/leaflet.css">
 <link rel="stylesheet" type="text/css" href="css/vue.css">
@@ -26,10 +27,17 @@
           <option v-bind:value="1">All photos</option>
           <option v-bind:value="2">Photos with point coordinates</option>
        </select>
+       <select v-model='params.limit' name='limit'>
+          <option v-bind:value="15">15</option>
+          <option v-bind:value="30">30</option>
+          <option v-bind:value="50">50</option>
+          <option v-bind:value="100">100</option>
+       </select>
           
-       <input type='button' value='random' onclick='document.location="vue.html?uniq=" + Math.random()'>
+       <input type='button' value='random' @click="random(params.limit)">
        <a :href='params.searchurl'>json</a>
        <div class='floatright'>Kuvat: Helsingin kaupunginmuseo / <a href='http://creativecommons.org/licenses/by/4.0/deed.fi'>CC-BY-4.0</a></div>
+       <div class='floatright'>{{ user.username }}</div>
     </form>
     </div>
 </script>
@@ -50,7 +58,7 @@
       <h3>{{ photo.title }}</h3>
       <p>{{ photo.summary }}</p>
       <ul>
-         <li v-if="photo.placeline"><a :href="'?searchkey=' + photo.placeline + '&coordfilter=' + params.coordfilter">{{photo.placeline}}</a></li>
+         <li v-if="photo.placeline"><a :href="'?searchkey=' + photo.placeline + '&coordfilter=' + params.coordfilter +'&limit=' +params.limit">{{photo.placeline}}</a></li>
          <li v-if="photo.dateline">{{photo.dateline}}</li>
          <li v-if="photo.lat">{{photo.lat}}, {{photo.lon}} </li>
          <li v-if="photo.author_name">{{photo.author_name}}</li>
@@ -86,10 +94,15 @@
                      @mouseover="modal.photo.ishovering = true"  
                      @mouseout="modal.photo.ishovering = false" 
                      :src="'https://www.finna.fi' + modal.photo.large_url" />
+                  <div>
+                     <button @click="uploadclick(modal.index); "  class='uploadbutton' :value='modal.photo.finna_id'>Upload to Commons</button>
+                     <a :href="'https://www.finna.fi' + modal.photo.master_url" target="_blank">download</a>
+                  </div>
                </div>
                <div class='modal_col'>
-                  <p>{{ modal.photo.summary }}</p>
+                  <div>{{ modal.photo.summary }}</div>
                   <ul>
+                     <li v-if="modal.photo.placeline"><a :href="'?searchkey=' + modal.photo.placeline + '&coordfilter=' + params.coordfilter +'&limit=' + params.limit">{{modal.photo.placeline}}</a></li>
                      <li v-if="modal.photo.dateline">{{modal.photo.dateline}}</li>
                      <li v-if="modal.photo.lat">{{modal.photo.lat}}, {{modal.photo.lon}} </li>
                      <li v-if="modal.photo.author_name">{{modal.photo.author_name}}</li>
@@ -120,7 +133,7 @@
 <body>
 
 <div id="app">
-  <topbar-component v-bind:params='params'></topbar-component>
+  <topbar-component v-bind:params='params' v-bind:user='user'></topbar-component>
   <photos-component v-bind:photos='photos' v-bind:params='params' v-bind:modal='modal'></photos-component>
   <modal v-if="modal.showModal" v-bind:params='params' v-bind:photos='photos' v-bind:modal='modal' @close="modal.showModal = false"> </modal>
 </div>
@@ -128,9 +141,5 @@
 </body>
 </html>
 
-  <!--button id="modal.show-modal"  v-bind:modal='modal'  @click="modal.showModal = true">Show Modal</button-->
-
-               <h3>{{ modal.photo.title }}</h3-->
 
 
-                  <!--li v-if="modal.photo.placeline"><a :href="'?searchkey=' + photo.placeline + '&coordfilter=' + params.coordfilter">{{modal.photo.placeline}}</a></li-->

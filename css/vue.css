@@ -17,11 +17,12 @@
 
 .floatright {
    float:right;
+   padding-left:0.5em;
 }
 
 #mapid {
 	clear:both;
-	height:250px;
+	height:350px;
 }
 
 .map_popup_image {

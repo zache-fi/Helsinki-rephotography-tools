@@ -37,7 +37,7 @@ function upload_to_commons(photo) {
    if (permission.trim()=="CC BY 4.0") permission="{{CC-BY-4.0}}";
   
    var description="{{Information\n";
-   description+="| Description    = {{fi|" + photo.summary +"}}\n";
+   description+="| Description    = {{fi|" + photo.title + " -- " + photo.summary +"}}\n";
    description+="| Date           =" + photo.dateline +"\n"; 
    description+="| Source         = Helsingin kaupunginmuseo: [https://www.finna.fi/Record/" + photo.finna_id + " " + photo.finna_id +"]\n";
    description+="| Author         =" +photo.author_name +"\n"; 

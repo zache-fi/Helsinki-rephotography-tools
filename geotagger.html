@@ -33,6 +33,25 @@
 <body>
 <div id="map" style="width:100%; height:500px"></div>
 
+<script type="text/javascript">
+$(function() {
+   var options = {
+      'id':'Finna:123',
+      'lat':60.168683,
+      'lng':24.940967,
+      'azimuth':45,
+      'confirmHandler': function (p) {
+         alert("Confirm" + JSON.stringify(p));
+      },
+      'submitHandler': function (p) {
+         alert("Submit" + JSON.stringify(p) );
+      }
+   }
+   var map = L.map("map");
+   var t= L.geotagPhoto.addUi(map, options);
+});
+</script>
+
 </body>
 </html>
 

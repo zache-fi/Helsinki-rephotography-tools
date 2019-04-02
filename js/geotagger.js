@@ -96,7 +96,11 @@
          this._map = undefined;
          map.state.cameraLatLng=this._crosshair.getCrosshairLatLng()
          this._crosshair.removeFrom(map);
-      }
+      },
+      getCameraLatLng: function() {
+         return this._crosshair.getCrosshairLatLng();
+      },
+
    });
 
 
@@ -189,6 +193,12 @@
          map.state.cameraLatLng=this._camera.getCameraLatLng()
          map.state.destinationLatLng=this._camera.getTargetLatLng()
          this._camera.removeFrom(map);
+      },
+      getCameraLatLng: function() {
+         return this._camera.getCameraLatLng();
+      },
+      getTargetLatLng: function() {
+         return this._camera.getTargetLatLng();
       }
    });
 
@@ -226,12 +236,28 @@
          position: 'bottomleft'
       },
 
+      initialize: function initialize(options) {
+         L.setOptions(this, options);
+      },
+
       onAdd: function (map) {
          var container = L.DomUtil.create('div', 'geotagger-confirm-geotag leaflet-bar leaflet-control material-icons notranslate');
          container.innerHTML="<a href='#'>beenhere</a>";
 
+         var onConfirm=this.options.onConfirm;
          container.onclick = function(){
-            console.log('buttonClicked');
+            console.log('confirmButtonClicked');
+            if (onConfirm)
+            {
+               var ret={
+                  'mode':'confirm',
+                  'id':map.state.id,
+                  'lat':map.state.lat,
+                  'lng':map.state.lng,
+                  'azimuth':map.state.azimuth,
+               }
+               onConfirm(ret);
+            }
          }
          return container;
       }
@@ -270,13 +296,37 @@
       options: {
          position: 'bottomleft'
       },
-
+      initialize: function initialize(options) {
+         L.setOptions(this, options);
+      },
       onAdd: function (map) {
          var container = L.DomUtil.create('div', 'geotagger-submit-geotagging leaflet-bar leaflet-control material-icons notranslate');
          container.innerHTML="<a href='#'>done</a>";
 
+         var onSubmit=this.options.onSubmit;
          container.onclick = function(){
-            console.log('buttonClicked');
+            console.log('submitButtonClicked');
+            if (onSubmit)
+            {
+               var cameraLatLng = map.buttons.photoMarker.getCameraLatLng();
+               var azimuth = 0;
+
+               var ret={
+                  'mode':'submit',
+                  'id':map.state.id,
+                  'lat':cameraLatLng.lat,
+                  'lng':cameraLatLng.lng,
+               }
+               if (map.state.mode=='camera')
+               {
+                  var destinationLatLng = map.buttons.photoMarker.getTargetLatLng();
+                  ret['azimuth']=L.GeometryUtil.bearing(cameraLatLng,destinationLatLng);
+                  ret['targetLat']=destinationLatLng.lat;
+                  ret['targetLng']=destinationLatLng.lng;
+               }
+
+               onSubmit(ret);
+            }
          }
          return container;
       }
@@ -314,11 +364,11 @@
       }
    });
 
-   var geotagui =  L.Class.extend({
+   var addUi =  L.Class.extend({
       options: {
       },
       initialize: function initialize(map, options) {
-         L.setOptions(this, options);
+          L.setOptions(this, options);
 
           map.state=this.options;
           map.buttons={};
@@ -346,7 +396,7 @@
 
           map.state.initialCenterLatLng = {
              lat: map.state.lat,
-             lng: map.state.lon
+             lng: map.state.lng
           };
           map.state.cameraLatLng = map.state.initialCenterLatLng;
 
@@ -358,9 +408,9 @@
           map.setView(map.state.initialCenterLatLng, 13);
 
           map.buttons.startGeotaggingButton=new startGeotaggingButton();
-          map.buttons.confirmGeotagButton=new confirmGeotagButton();
+          map.buttons.confirmGeotagButton=new confirmGeotagButton({'onConfirm':options.confirmHandler});
           map.buttons.cancelGeotaggingButton=new cancelGeotaggingButton();
-          map.buttons.submitGeotagButton=new submitGeotagButton();
+          map.buttons.submitGeotagButton=new submitGeotagButton({'onSubmit':options.submitHandler});
           map.buttons.toggleCrosshairGeotagButton=new toggleCrosshairGeotagButton();
 
           map.addControl(map.buttons.startGeotaggingButton);
@@ -369,23 +419,30 @@
        }
     });
 
-   L.geotagPhoto.geotagui=  function (map, options) {
-          return new geotagui(map, options);
+   L.geotagPhoto.addUi=  function (map, options) {
+          return new addUi(map, options);
        };
 
-   L.GeotagPhoto.geotagui=geotagui;
+   L.GeotagPhoto.addUi=addUi;
 
 
 
 }(L));
-
+/*
 $(function() {
    var options = {
+      'id':'Finna:123',
       'lat':60.168683,
-      'lon':24.940967,
-      'azimuth':45
+      'lng':24.940967,
+      'azimuth':45,
+      'confirmHandler': function (p) {
+         alert("Confirm" + JSON.stringify(p));
+      },
+      'submitHandler': function (p) {
+         alert("Submit" + JSON.stringify(p) );
+      }
    }
    var map = L.map("map");
-   var t= L.geotagPhoto.geotagui(map, options);
-
+   var t= L.geotagPhoto.addUi(map, options);
 });
+*/

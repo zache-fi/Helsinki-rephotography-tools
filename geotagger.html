@@ -15,7 +15,7 @@
 <script src="js/proj4-compressed.js"></script>
 <script src="js/proj4leaflet.js"></script>
 <script src="js/Leaflet.fullscreen.min.js"></script>
-<script src="js/Leaflet.GeotagPhoto.min.js"></script>
+<script src="js/Leaflet.GeotagPhoto.js"></script>
 <script src="js/leaflet.rotatedMarker.js"></script>
 <script src="js/leaflet.geometryutil.js"></script>
 <!--script src="js/leaflet.easy-button.js"></script-->
@@ -49,6 +49,20 @@ $(function() {
    }
    var map = L.map("map");
    var t= L.geotagPhoto.addUi(map, options);
+
+   var normalTiles = L.tileLayer('https://cdn.digitransit.fi/map/v1/{id}/{z}/{x}/{y}.png', {
+      attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+      '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+      maxZoom: 18,
+      tileSize: 512,
+      zoomOffset: -1,
+      id: 'hsl-map'}).addTo(map);
+
+   L.control.layers({
+      "digiTransit": normalTiles
+   }, {}, {
+      collapsed: false
+   }).addTo(map);
 });
 </script>
 
